@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Reembolso IRS (RNH)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 10px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 10px auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      font-weight: 300;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .language-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.7rem;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .language-toggle:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card-body {
+      padding: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #555;
+      font-size: 1rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e1e1e1;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      font-weight: 600;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .resultado {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+      padding: 25px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .resultado-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .resultado-item:last-child {
+      border-bottom: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .disclaimer {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .disclaimer h3 {
+      color: #d63031;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+
+    .disclaimer ul {
+      margin-left: 20px;
+    }
+
+    .disclaimer li {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    .disclaimer-small {
+      padding: 15px;
+      font-size: 0.85rem;
+    }
+
+    .disclaimer-small h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .disclaimer-small ul {
+      margin-left: 15px;
+    }
+
+    .disclaimer-small li {
+      margin-bottom: 5px;
+      line-height: 1.4;
+    }
+
+    .icon {
+      font-size: 1.5rem;
+      margin-right: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 5px auto;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .card-body {
+        padding: 20px;
+      }
+
+      .header {
+        margin-bottom: 15px;
+      }
+      
+      .language-toggle {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        font-size: 0.6rem;
+        padding: 3px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <button class="language-toggle" onclick="toggleLanguage()" id="languageToggle">🇬🇧 English</button>
+      <h1 id="mainTitle">🇵🇹 Simulador IRS (RNH)</h1>
+      <p id="subtitle">Regime do Residente Não Habitual</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 id="formTitle">💼 Dados para Simulação</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label for="rendimento" id="incomeLabel">
+            <span class="icon">💰</span>Rendimento bruto anual (€):
+          </label>
+          <input type="number" id="rendimento" placeholder="Ex: 50.000" step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label for="contribuicoes" id="contributionsLabel">
+            <span class="icon">🏛️</span>Contribuições para a Segurança Social (€):
+          </label>
+          <input type="number" id="contribuicoes" placeholder="Ex: 3.500" step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label for="retencao" id="withholdingLabel">
+            <span class="icon">🧾</span>Retenção na fonte já paga (€):
+          </label>
+          <input type="number" id="retencao" placeholder="Ex: 8.000" step="0.01">
+        </div>
+
+        <button class="btn" onclick="simular()" id="calculateBtn">
+          📊 Calcular Reembolso IRS
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="resultado" id="resultado">
+        <h3 id="resultsTitle" style="text-align: center; margin-bottom: 20px;">📋 Resultado da Simulação</h3>
+        <div id="resultado-content"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="disclaimer disclaimer-small">
+        <h3 id="disclaimerTitle">⚠️ Aviso Legal e Limitações</h3>
+        <ul id="disclaimerList">
+          <li><strong id="disclaimer1Title">Simulação simplificada:</strong> <span id="disclaimer1Text">Este cálculo é apenas uma estimativa para pessoa singular e não substitui o aconselhamento fiscal profissional.</span></li>
+          <li><strong id="disclaimer2Title">Regime NHR:</strong> <span id="disclaimer2Text">Considera que todos os rendimentos estão sujeitos à taxa fixa de 20% do regime de residente não habitual.</span></li>
+          <li><strong id="disclaimer3Title">Não inclui:</strong> <span id="disclaimer3Text">Deduções específicas, benefícios fiscais adicionais, sobretaxa, contribuição extraordinária de solidariedade ou outras variáveis fiscais.</span></li>
+          <li><strong id="disclaimer4Title">Taxa aplicável:</strong> <span id="disclaimer4Text">Baseado na taxa de 20% vigente para atividades de alto valor acrescentado no regime NHR.</span></li>
+          <li><strong id="disclaimer5Title">Recomendação:</strong> <span id="disclaimer5Text">Consulte sempre um contabilista certificado ou consultor fiscal para uma análise completa da sua situação.</span></li>
+          <li><strong id="disclaimer6Title">Validade:</strong> <span id="disclaimer6Text">Cálculo baseado na legislação fiscal atual, sujeita a alterações.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentLanguage = 'pt';
+
+    const translations = {
+      pt: {
+        languageToggle: '🇬🇧 English',
+        mainTitle: '🇵🇹 Simulador IRS (RNH)',
+        subtitle: 'Regime do Residente Não Habitual',
+        formTitle: '💼 Dados para Simulação',
+        incomeLabel: 'Rendimento bruto anual (€):',
+        contributionsLabel: 'Contribuições para a Segurança Social (€):',
+        withholdingLabel: 'Retenção na fonte já paga (€):',
+        calculateBtn: '📊 Calcular Reembolso IRS',
+        resultsTitle: '📋 Resultado da Simulação',
+        disclaimerTitle: '⚠️ Aviso Legal e Limitações',
+        disclaimer1Title: 'Simulação simplificada:',
+        disclaimer1Text: 'Este cálculo é apenas uma estimativa para pessoa singular e não substitui o aconselhamento fiscal profissional.',
+        disclaimer2Title: 'Regime NHR:',
+        disclaimer2Text: 'Considera que todos os rendimentos estão sujeitos à taxa fixa de 20% do regime de residente não habitual.',
+        disclaimer3Title: 'Não inclui:',
+        disclaimer3Text: 'Deduções específicas, benefícios fiscais adicionais, sobretaxa, contribuição extraordinária de solidariedade ou outras variáveis fiscais.',
+        disclaimer4Title: 'Taxa aplicável:',
+        disclaimer4Text: 'Baseado na taxa de 20% vigente para atividades de alto valor acrescentado no regime NHR.',
+        disclaimer5Title: 'Recomendação:',
+        disclaimer5Text: 'Consulte sempre um contabilista certificado ou consultor fiscal para uma análise completa da sua situação.',
+        disclaimer6Title: 'Validade:',
+        disclaimer6Text: 'Cálculo baseado na legislação fiscal atual, sujeita a alterações.',
+        // Results
+        grossIncome: 'Rendimento bruto anual:',
+        contributions: 'Contribuições SS:',
+        taxableIncome: 'Rendimento coletável:',
+        taxDue: 'Imposto devido (20% NHR):',
+        withholdingPaid: 'Retenção já paga:',
+        refundEstimated: 'Reembolso estimado:',
+        additionalPayment: 'Valor a pagar adicional:',
+        // Alerts
+        fillAllFields: '⚠️ Por favor, preencha todos os campos com valores numéricos válidos.',
+        incomeGreaterThanZero: '⚠️ O rendimento deve ser maior que zero.',
+        noNegativeValues: '⚠️ As contribuições e retenção não podem ser negativas.',
+        // Placeholders
+        incomePlaceholder: 'Ex: 50.000',
+        contributionsPlaceholder: 'Ex: 3.500',
+        withholdingPlaceholder: 'Ex: 8.000'
+      },
+      en: {
+        languageToggle: '🇵🇹 Português',
+        mainTitle: '🇵🇹 IRS Tax Refund Simulator (NHR)',
+        subtitle: 'Non-Habitual Resident Regime',
+        formTitle: '💼 Simulation Data',
+        incomeLabel: 'Annual gross income (€):',
+        contributionsLabel: 'Social Security contributions (€):',
+        withholdingLabel: 'Withholding tax already paid (€):',
+        calculateBtn: '📊 Calculate IRS Refund',
+        resultsTitle: '📋 Simulation Results',
+        disclaimerTitle: '⚠️ Legal Notice and Limitations',
+        disclaimer1Title: 'Simplified simulation:',
+        disclaimer1Text: 'This calculation is only an estimate for individual taxpayers and does not replace professional tax advice.',
+        disclaimer2Title: 'NHR Regime:',
+        disclaimer2Text: 'Assumes that all income is subject to the 20% flat rate of the non-habitual resident regime.',
+        disclaimer3Title: 'Does not include:',
+        disclaimer3Text: 'Specific deductions, additional tax benefits, surcharge, extraordinary solidarity contribution or other tax variables.',
+        disclaimer4Title: 'Applicable rate:',
+        disclaimer4Text: 'Based on the 20% rate applicable to high value-added activities under the NHR regime.',
+        disclaimer5Title: 'Recommendation:',
+        disclaimer5Text: 'Always consult a certified accountant or tax advisor for a complete analysis of your situation.',
+        disclaimer6Title: 'Validity:',
+        disclaimer6Text: 'Calculation based on current tax legislation, subject to changes.',
+        // Results
+        grossIncome: 'Annual gross income:',
+        contributions: 'SS contributions:',
+        taxableIncome: 'Taxable income:',
+        taxDue: 'Tax due (20% NHR):',
+        withholdingPaid: 'Withholding already paid:',
+        refundEstimated: 'Estimated refund:',
+        additionalPayment: 'Additional amount to pay:',
+        // Alerts
+        fillAllFields: '⚠️ Please fill in all fields with valid numeric values.',
+        incomeGreaterThanZero: '⚠️ Income must be greater than zero.',
+        noNegativeValues: '⚠️ Contributions and withholding cannot be negative.',
+        // Placeholders
+        incomePlaceholder: 'Ex: 50,000',
+        contributionsPlaceholder: 'Ex: 3,500',
+        withholdingPlaceholder: 'Ex: 8,000'
+      }
+    };
+
+    function toggleLanguage() {
+      currentLanguage = currentLanguage === 'pt' ? 'en' : 'pt';
+      updateLanguage();
+    }
+
+    function updateLanguage() {
+      const t = translations[currentLanguage];
+      
+      // Update all text elements
+      document.getElementById('languageToggle').textContent = t.languageToggle;
+      document.getElementById('mainTitle').textContent = t.mainTitle;
+      document.getElementById('subtitle').textContent = t.subtitle;
+      document.getElementById('formTitle').textContent = t.formTitle;
+      
+      // Update labels without duplicating icons
+      document.getElementById('incomeLabel').innerHTML = `<span class="icon">💰</span>${t.incomeLabel}`;
+      document.getElementById('contributionsLabel').innerHTML = `<span class="icon">🏛️</span>${t.contributionsLabel}`;
+      document.getElementById('withholdingLabel').innerHTML = `<span class="icon">🧾</span>${t.withholdingLabel}`;
+      
+      document.getElementById('calculateBtn').textContent = t.calculateBtn;
+      document.getElementById('resultsTitle').textContent = t.resultsTitle;
+      document.getElementById('disclaimerTitle').textContent = t.disclaimerTitle;
+      
+      // Update disclaimer
+      document.getElementById('disclaimer1Title').textContent = t.disclaimer1Title;
+      document.getElementById('disclaimer1Text').textContent = t.disclaimer1Text;
+      document.getElementById('disclaimer2Title').textContent = t.disclaimer2Title;
+      document.getElementById('disclaimer2Text').textContent = t.disclaimer2Text;
+      document.getElementById('disclaimer3Title').textContent = t.disclaimer3Title;
+      document.getElementById('disclaimer3Text').textContent = t.disclaimer3Text;
+      document.getElementById('disclaimer4Title').textContent = t.disclaimer4Title;
+      document.getElementById('disclaimer4Text').textContent = t.disclaimer4Text;
+      document.getElementById('disclaimer5Title').textContent = t.disclaimer5Title;
+      document.getElementById('disclaimer5Text').textContent = t.disclaimer5Text;
+      document.getElementById('disclaimer6Title').textContent = t.disclaimer6Title;
+      document.getElementById('disclaimer6Text').textContent = t.disclaimer6Text;
+
+      // Update placeholders
+      document.getElementById('rendimento').placeholder = t.incomePlaceholder;
+      document.getElementById('contribuicoes').placeholder = t.contributionsPlaceholder;
+      document.getElementById('retencao').placeholder = t.withholdingPlaceholder;
+
+      // Update document language
+      document.documentElement.lang = currentLanguage;
+      
+      // Update page title
+      document.title = currentLanguage === 'pt' ? 
+        'Simulador de Reembolso IRS (RNH)' : 
+        'IRS Tax Refund Simulator (NHR)';
+
+      // Re-generate results if they are currently displayed
+      const resultElement = document.getElementById('resultado');
+      if (resultElement.style.display === 'block') {
+        refreshResults();
+      }
+    }
+
+    function refreshResults() {
+      // Get current input values and re-run simulation with new language
+      const rendimento = parseFloat(document.getElementById('rendimento').value);
+      const contribuicoes = parseFloat(document.getElementById('contribuicoes').value);
+      const retencao = parseFloat(document.getElementById('retencao').value);
+
+      if (!isNaN(rendimento) && !isNaN(contribuicoes) && !isNaN(retencao)) {
+        const t = translations[currentLanguage];
+        const resultado = calcularReembolsoRNH(rendimento, contribuicoes, retencao);
+        
+        const reembolsoIcon = resultado.reembolso >= 0 ? '💸' : '💳';
+        const reembolsoText = resultado.reembolso >= 0 ? t.refundEstimated : t.additionalPayment;
+
+        document.getElementById('resultado-content').innerHTML = `
+          <div class="resultado-item">
+            <span>💰 ${t.grossIncome}</span>
+            <strong>${formatCurrency(rendimento)}</strong>
+          </div>
+          <div class="resultado-item">
+            <span>🏛️ ${t.contributions}</span>
+            <strong>${formatCurrency(contribuicoes)}</strong>
+          </div>
+          <div class="resultado-item">
+            <span>📊 ${t.taxableIncome}</span>
+            <strong>${formatCurrency(resultado.rendimentoColetavel)}</strong>
+          </div>
+          <div class="resultado-item">
+            <span>🧾 ${t.taxDue}</span>
+            <strong>${formatCurrency(resultado.impostoDevido)}</strong>
+          </div>
+          <div class="resultado-item">
+            <span>💳 ${t.withholdingPaid}</span>
+            <strong>${formatCurrency(retencao)}</strong>
+          </div>
+          <div class="resultado-item" style="background: rgba(255,255,255,0.15);">
+            <span>${reembolsoIcon} ${reembolsoText}</span>
+            <strong style="color: ${resultado.reembolso >= 0 ? '#fff' : '#ffcdd2'}">${formatCurrency(Math.abs(resultado.reembolso))}</strong>
+          </div>
+        `;
+      }
+    }
+
+    function calcularReembolsoRNH(rendimentoBruto, contribuicoes, retencaoNaFonte) {
+      const rendimentoColetavel = rendimentoBruto - contribuicoes;
+      const impostoDevido = rendimentoColetavel * 0.20; // Taxa fixa NHR 20%
+      const reembolso = retencaoNaFonte - impostoDevido;
+      
+      return {
+        rendimentoColetavel: rendimentoColetavel,
+        impostoDevido: impostoDevido,
+        reembolso: reembolso
+      };
+    }
+
+    function formatCurrency(value) {
+      const locale = currentLanguage === 'pt' ? 'pt-PT' : 'en-IE';
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2
+      }).format(value);
+    }
+
+    function simular() {
+      const t = translations[currentLanguage];
+      const rendimento = parseFloat(document.getElementById('rendimento').value);
+      const contribuicoes = parseFloat(document.getElementById('contribuicoes').value);
+      const retencao = parseFloat(document.getElementById('retencao').value);
+
+      // Validação de inputs
+      if (isNaN(rendimento) || isNaN(contribuicoes) || isNaN(retencao)) {
+        alert(t.fillAllFields);
+        return;
+      }
+
+      if (rendimento <= 0) {
+        alert(t.incomeGreaterThanZero);
+        return;
+      }
+
+      if (contribuicoes < 0 || retencao < 0) {
+        alert(t.noNegativeValues);
+        return;
+      }
+
+      const resultado = calcularReembolsoRNH(rendimento, contribuicoes, retencao);
+      
+      const reembolsoIcon = resultado.reembolso >= 0 ? '💸' : '💳';
+      const reembolsoText = resultado.reembolso >= 0 ? t.refundEstimated : t.additionalPayment;
+
+      document.getElementById('resultado').style.display = 'block';
+      document.getElementById('resultado-content').innerHTML = `
+        <div class="resultado-item">
+          <span>💰 ${t.grossIncome}</span>
+          <strong>${formatCurrency(rendimento)}</strong>
+        </div>
+        <div class="resultado-item">
+          <span>🏛️ ${t.contributions}</span>
+          <strong>${formatCurrency(contribuicoes)}</strong>
+        </div>
+        <div class="resultado-item">
+          <span>📊 ${t.taxableIncome}</span>
+          <strong>${formatCurrency(resultado.rendimentoColetavel)}</strong>
+        </div>
+        <div class="resultado-item">
+          <span>🧾 ${t.taxDue}</span>
+          <strong>${formatCurrency(resultado.impostoDevido)}</strong>
+        </div>
+        <div class="resultado-item">
+          <span>💳 ${t.withholdingPaid}</span>
+          <strong>${formatCurrency(retencao)}</strong>
+        </div>
+        <div class="resultado-item" style="background: rgba(255,255,255,0.15);">
+          <span>${reembolsoIcon} ${reembolsoText}</span>
+          <strong style="color: ${resultado.reembolso >= 0 ? '#fff' : '#ffcdd2'}">${formatCurrency(Math.abs(resultado.reembolso))}</strong>
+        </div>
+      `;
+
+      // Scroll to result
+      document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Format input on blur
+    document.addEventListener('DOMContentLoaded', function() {
+      const inputs = document.querySelectorAll('input[type="number"]');
+      inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+          if (this.value) {
+            this.value = parseFloat(this.value).toFixed(2);
+          }
+        });
+      });
+      
+      // Initialize language on page load
+      updateLanguage();
+    });
+  </script>
+</body>
+</html>
